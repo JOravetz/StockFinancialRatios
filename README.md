@@ -128,7 +128,24 @@ weighted_average = (sharpe_ratio * 0.3) + (sortino_ratio * 0.2) + (information_r
 * Calmar Ratio: A measure of risk-adjusted returns that evaluates the ratio of annualized return to maximum drawdown. It measures how much return is generated per unit of downside risk. Higher ratios indicate better performance in generating returns while minimizing downside risk.
 * Omega Ratio: A measure of risk-adjusted returns that evaluates the ratio of the probability-weighted average return of an investment to its probability-weighted average loss for returns below a certain threshold. It measures the amount of expected return per unit of expected loss. Higher ratios indicate better performance in generating positive returns while minimizing negative returns.
 
-### License
+## Extra Credit
+
+The Python scripts can be compiled using Cython.  If you would like the scripts to execute faster, you could install the following packages:
+
+```
+sudo apt update
+sudo apt install python3 black cython3 gcc
+```
+
+Execute the following script, to compile the python code.
+
+```
+./compile_all.sh
+```
+
+This will generate compiled C code, which you could use to modify the `financial_ratios.sh` bash script.  Simply remove the `.py` extensions in the script.
+
+## License
 
 This project is licensed under the MIT License - see the LICENSE.md file for details.
 

@@ -32,11 +32,13 @@ def get_historic_prices(universe, date_from, to_end, ndays, max_workers=100):
             symbol, TimeFrame.Day, date_from, to_end, adjustment="split"
         ).df
         data_frame.reset_index(inplace=True)
-        data_frame["datetime"] = pd.to_datetime(data_frame["timestamp"]).dt.strftime(
-            "%Y-%m-%d"
-        )
+        data_frame["datetime"] = pd.to_datetime(
+            data_frame["timestamp"]
+        ).dt.strftime("%Y-%m-%d")
         # Filter out rows with 0 values for volume, trade_count, or vwap
-        data_frame = data_frame[~(data_frame[["volume", "trade_count", "vwap"]] == 0).any(axis=1)]
+        data_frame = data_frame[
+            ~(data_frame[["volume", "trade_count", "vwap"]] == 0).any(axis=1)
+        ]
         data_frame = data_frame[["datetime", "close"]]
         data_frame.set_index("datetime", inplace=True)
 
@@ -80,7 +82,9 @@ def run(args):
 
     # Read stock symbols from the list file
     with open(stock_list, "r") as f:
-        universe = [item.upper() for item in f.read().split("\n") if item != ""]
+        universe = [
+            item.upper() for item in f.read().split("\n") if item != ""
+        ]
     if "SPY" not in universe:
         universe.append("SPY")
 

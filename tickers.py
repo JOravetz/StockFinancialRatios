@@ -32,7 +32,10 @@ class TickerList:
         with open(file_name + ".txt", "w") as tfile:
             tfile.write(df.to_csv(sep="|", header=None))
 
-        print(f"Successfully saved the list of active assets to {file_name}.txt")
+        print(
+            f"Successfully saved the list of active assets to {file_name}.txt"
+        )
+
 
 if __name__ == "__main__":
     # Load API keys and base URL from environment variables
