@@ -30,7 +30,7 @@ Make the python and bash scripts executable and create a data directory with rea
 ```
 chmod 711 *.py *.sh
 mkdir ./data
-chmod 770 ./data
+chmod +rw ./data
 ```
 
 The python scripts read Alpaca keys from environment variables on you system.
