@@ -1,5 +1,5 @@
 # StockFinancialRatios
-Generate Sharpe, Sortino, Information, Treynor, Calmar, and Omega ratios for financial risk analysis.
+Generate Sharpe, Sortino, Information, Treynor, Calmar, and Omega ratios for financial risk analysis from Alpaca historical market price data.
 
 ## Purpose
 
