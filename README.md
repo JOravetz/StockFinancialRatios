@@ -44,7 +44,7 @@ export APCA_API_BASE_URL="https://paper-api.alpaca.markets"
 ## Example Script Execution
 
 ```
-./financial_ratios.sh -l momentum.lis
+./financial_ratios.sh -l momentum.lis -n 504 -f sip
 ```
 
 The output should look something like this:
