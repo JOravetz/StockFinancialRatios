@@ -45,6 +45,8 @@ export APCA_API_BASE_URL="https://paper-api.alpaca.markets"
 
 ```
 ./financial_ratios.sh -l momentum.lis -n 504 -f sip
+
+Usage: ./financial_ratios.sh [-n num_days] [-l stock_list] [-f feed_source]
 ```
 
 The output should look something like this:
