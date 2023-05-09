@@ -1,9 +1,10 @@
 #!/bin/bash
 
 num_days=504
+feed_source="sip"
 stock_list=""
 
-while getopts "n:l:" opt; do
+while getopts "n:l:f" opt; do
   case $opt in
     n)
       num_days="$OPTARG"
@@ -11,8 +12,11 @@ while getopts "n:l:" opt; do
     l)
       stock_list="$OPTARG"
       ;;
+    f)
+      feed_source="$OPTARG"
+      ;;
     *)
-      echo "Usage: $0 [-n num_days] [-l stock_list_file]" >&2
+      echo "Usage: $0 [-n num_days] [-l stock_list] [-f feed_source]" >&2
       exit 1
       ;;
   esac
@@ -26,7 +30,7 @@ if [ -z "$stock_list" ]; then
   stock_list="combined.lis"
 fi
 
-./fetch_historical_prices.py --list "$stock_list" --ndays "$num_days"
+./fetch_historical_prices.py --list "$stock_list" --ndays "$num_days" --feed "$feed_source"
 
 wc -l ./data/*.dat | awk -v days=504 '{
   if ($1 == days) {

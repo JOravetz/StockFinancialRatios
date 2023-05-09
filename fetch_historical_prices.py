@@ -21,7 +21,9 @@ BASE_URL = os.environ["APCA_API_BASE_URL"]
 rest_api = REST(API_KEY_ID, SECRET_KEY_ID, BASE_URL)
 
 
-def get_historic_prices(universe, date_from, to_end, ndays, max_workers=100):
+def get_historic_prices(
+    universe, date_from, to_end, ndays, feed, max_workers=100
+):
     """
     Fetch historical prices for stock symbols in the universe.
     """
@@ -29,7 +31,12 @@ def get_historic_prices(universe, date_from, to_end, ndays, max_workers=100):
     def historic_agg_v2(symbol):
         # Get historical data for the given symbol
         data_frame = rest_api.get_bars(
-            symbol, TimeFrame.Day, date_from, to_end, adjustment="split"
+            symbol,
+            TimeFrame.Day,
+            date_from,
+            to_end,
+            adjustment="split",
+            feed=feed,
         ).df
         data_frame.reset_index(inplace=True)
         data_frame["datetime"] = pd.to_datetime(
@@ -79,6 +86,7 @@ def run(args):
 
     stock_list = str(args.list)
     ndays = int(args.ndays)
+    feed = str(args.feed)
 
     # Read stock symbols from the list file
     with open(stock_list, "r") as f:
@@ -107,7 +115,7 @@ def run(args):
     )
 
     # Fetch historical prices for the universe of stock symbols
-    get_historic_prices(universe, date_from, to_end, ndays)
+    get_historic_prices(universe, date_from, to_end, ndays, feed)
 
 
 if __name__ == "__main__":
@@ -126,6 +134,12 @@ if __name__ == "__main__":
         default="504",
         help="Number of days to fetch historical price data "
         "(default, ex: --ndays 504)",
+    )
+    PARSER.add_argument(
+        "--feed",
+        type=str,
+        default="sip",
+        help="Data feed source, either sip or iex (default: sip)",
     )
 
     # Parse command-line arguments and run the script
