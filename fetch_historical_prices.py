@@ -78,7 +78,6 @@ def get_historic_prices(
             try:
                 results[symbol] = future.result()
             except Exception as e:
-                print(f"Error fetching data for {symbol}: {e}")
                 continue
         return results
 
