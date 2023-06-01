@@ -25,14 +25,14 @@ done
 rm -f ./data/*.dat
 
 if [ -z "$stock_list" ]; then
-  ./tickers.py > /dev/null
+  python3 tickers.py > /dev/null
   awk -F"|" 'NR>1 && length($1)<5 {print $1}' tickers.txt | sort | uniq > combined.lis 
   stock_list="combined.lis"
 else
   awk '{print $1}' "${stock_list}" > tmp.lis ; mv tmp.lis "${stock_list}"
 fi
 
-./fetch_historical_prices.py --list "$stock_list" --ndays "$num_days" --feed "$feed_source"
+python3 fetch_historical_prices.py --list "$stock_list" --ndays "$num_days" --feed "$feed_source"
 
 wc -l ./data/*.dat | awk -v days="${num_days}" '{
   if ($1 == days) {
@@ -42,6 +42,6 @@ wc -l ./data/*.dat | awk -v days="${num_days}" '{
   }
 }' > good.lis
 
-./financial_ratios_calculator.py -l good.lis -n "${num_days}" > output.txt
+python3 financial_ratios_calculator.py -l good.lis -n "${num_days}" > output.txt
 cat output.txt
 
