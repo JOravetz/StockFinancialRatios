@@ -10,26 +10,31 @@ from pathlib import Path
 from scipy.stats import skew
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+TRADING_DAYS = 252  # Trading days in a year
+
 # Function to read stock prices from a file and return the last num_days prices as a NumPy array
 def read_prices_from_file(file_path, num_days):
-    df = pd.read_csv(
-        file_path,
-        sep="\s+",
-        header=None,
-        names=["date", "price"],
-        usecols=["price"],
-    )
-    return df.tail(num_days)["price"].values
+    try:
+        df = pd.read_csv(
+            file_path,
+            sep="\s+",
+            header=None,
+            names=["date", "price"],
+            usecols=["price"],
+        )
+        return df.tail(num_days)["price"].values
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
 
 
 def calculate_sortino_ratio(returns, target_return=0):
-    downside_returns = returns.copy()
-    downside_returns[returns > target_return] = 0
+    downside_returns = returns[returns < target_return]
     downside_std = np.std(downside_returns)
     sortino_ratio = (
         np.mean(returns - target_return) / downside_std
         if downside_std > 0
-        else 0
+        else np.nan
     )
     return sortino_ratio
 
@@ -54,24 +59,19 @@ def print_ratios(
 
 
 def process_stock(args, stock_file):
-    reference = args.reference
-    symbol = Path(
-        stock_file.name
-    ).stem  # extract the stock symbol from the file name
+    symbol = Path(stock_file.name).stem
+
+    reference_symbol = args.reference.upper()  # convert to upper case
+    reference_file_path = f"./data/{reference_symbol}.dat"
 
     # Read reference stock prices and input stock prices
-    ref_prices = read_prices_from_file(reference, args.num_days)
-    prices = (
-        pd.read_csv(
-            stock_file,
-            sep="\s+",
-            header=None,
-            names=["date", "price"],
-            usecols=["price"],
-        )
-        .tail(args.num_days)["price"]
-        .values
-    )
+    ref_prices = read_prices_from_file(reference_file_path, args.num_days)
+    if ref_prices is None:
+        return None
+
+    prices = read_prices_from_file(stock_file, args.num_days)
+    if prices is None:
+        return None
 
     # Calculate daily returns for both the reference and input stock prices
     daily_returns = np.diff(prices) / prices[:-1]
@@ -108,12 +108,14 @@ def process_stock(args, stock_file):
     beta = np.cov(ref_daily_returns, daily_returns)[0, 1] / np.var(
         ref_daily_returns
     )
-    excess_return = mean_daily_returns - np.mean(ref_daily_returns)
+    excess_return = cumulative_return - ref_cumulative_return  # corrected
     treynor_ratio = excess_return / beta if beta != 0 else 0
 
     # Calculate the Calmar Ratio
     max_drawdown = np.max(np.maximum.accumulate(prices) / prices - 1)
-    annual_return = (prices[-1] / prices[0]) ** (252 / len(prices)) - 1
+    annual_return = (prices[-1] / prices[0]) ** (
+        TRADING_DAYS / len(prices)
+    ) - 1
     calmar_ratio = annual_return / max_drawdown if max_drawdown != 0 else 0
 
     # Calculate the Omega Ratio
@@ -164,9 +166,10 @@ def print_header():
 
 def main(args):
     header_printed = False
-
     if args.symbol:
         args.symbol = args.symbol.upper()
+
+    reference_symbol = Path(args.reference).stem
 
     if args.list:
         with args.list.open() as f:
@@ -177,6 +180,8 @@ def main(args):
         with ThreadPoolExecutor() as executor:
             futures = []
             for symbol in stock_symbols:
+                if symbol == reference_symbol:
+                    continue
                 try:
                     stock_file = open(f"./data/{symbol}.dat", "r")
                     futures.append(
@@ -222,9 +227,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "-r",
         "--reference",
-        type=Path,
-        default="./data/SPY.dat",
-        help="Name of a file containing reference stock prices",
+        type=str,
+        default="SPY",
+        help="Symbol of the reference stock",
     )
     parser.add_argument(
         "-n",
@@ -249,6 +254,5 @@ if __name__ == "__main__":
         default=9,
         help="Index of the column to sort by (0-based)",
     )
-
     args = parser.parse_args()
     main(args)
