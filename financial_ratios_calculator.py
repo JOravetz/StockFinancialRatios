@@ -20,12 +20,12 @@ def read_prices_from_file(file_path, num_days):
             sep="\s+",
             header=None,
             names=["date", "price"],
-            usecols=["price"],
+            usecols=["date", "price"],
         )
-        return df.tail(num_days)["price"].values
+        return df.iloc[0]["date"], df.tail(num_days)["price"].values
     except FileNotFoundError:
         print(f"File not found: {file_path}")
-        return None
+        return None, None
 
 
 def calculate_sortino_ratio(returns, target_return=0):
@@ -65,12 +65,14 @@ def process_stock(args, stock_file):
     reference_file_path = f"./data/{reference_symbol}.dat"
 
     # Read reference stock prices and input stock prices
-    ref_prices = read_prices_from_file(reference_file_path, args.num_days)
+    ref_first_date, ref_prices = read_prices_from_file(
+        reference_file_path, args.num_days
+    )
     if ref_prices is None:
         return None
 
-    prices = read_prices_from_file(stock_file, args.num_days)
-    if prices is None:
+    first_date, prices = read_prices_from_file(stock_file, args.num_days)
+    if prices is None or first_date != ref_first_date:
         return None
 
     # Calculate daily returns for both the reference and input stock prices
@@ -192,10 +194,12 @@ def main(args):
 
             for future in as_completed(futures):
                 processed_data = future.result()
-                if not header_printed:
-                    print_header()
-                    header_printed = True
-                data.append(processed_data)
+                if processed_data is not None:
+                    data.append(processed_data)
+
+        # If there's no valid data to output, exit the program
+        if data is None or not data:
+            sys.exit()
 
         # Sort data by the specified column in ascending order
         data.sort(key=lambda x: x[args.sort_column], reverse=False)
