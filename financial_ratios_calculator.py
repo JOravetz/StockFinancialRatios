@@ -255,7 +255,7 @@ if __name__ == "__main__":
         "-c",
         "--sort_column",
         type=int,
-        default=9,
+        default=3,
         help="Index of the column to sort by (0-based)",
     )
     args = parser.parse_args()
