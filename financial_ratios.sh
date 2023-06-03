@@ -4,8 +4,9 @@ num_days=504
 feed_source="sip"
 stock_list=""
 reference_stock="SPY"
+sort_column=9  # default sort column
 
-while getopts "n:l:f:r:" opt; do
+while getopts "n:l:f:r:c:" opt; do
   case $opt in
     n)
       num_days="$OPTARG"
@@ -19,8 +20,11 @@ while getopts "n:l:f:r:" opt; do
     r)
       reference_stock=$(echo "$OPTARG" | tr '[:lower:]' '[:upper:]')
       ;;
+    c)
+      sort_column="$OPTARG"
+      ;;
     *)
-      echo "Usage: $0 [-n num_days] [-l stock_list] [-f feed_source] [-r reference_stock]" >&2
+      echo "Usage: $0 [-n num_days] [-l stock_list] [-f feed_source] [-r reference_stock] [-c sort_column]" >&2
       exit 1
       ;;
   esac
@@ -46,5 +50,5 @@ wc -l ./data/*.dat | awk -v days="${num_days}" '{
   }
 }' > good.lis
 
-python3 financial_ratios_calculator.py -l good.lis -n "${num_days}" -r "${reference_stock}" > output.txt
+python3 financial_ratios_calculator.py -l good.lis -n "${num_days}" -r "${reference_stock}" -c "${sort_column}" > output.txt
 cat output.txt
